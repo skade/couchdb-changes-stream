@@ -1,0 +1,12 @@
+[package]
+name = "couchdb-changes-stream"
+version = "0.1.0"
+authors = ["Florian Gilcher <florian.gilcher@asquera.de>"]
+
+[dependencies]
+hyper = "*"
+serde = "*"
+serde_json = "*"
+
+[[bin]]
+name = "couchdb-changes-stream"
