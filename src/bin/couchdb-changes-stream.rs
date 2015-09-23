@@ -3,10 +3,7 @@ extern crate serde;
 extern crate serde_json;
 extern crate couchdb_changes_stream;
 
-use couchdb_changes_stream::types::changes_lines::ChangesLines;
-
-use std::io::BufReader;
-use std::io::BufRead;
+use couchdb_changes_stream::changes_stream::ChangesStream;
 
 use hyper::Client;
 use hyper::header::Connection;
@@ -22,11 +19,9 @@ fn main() {
         // let 'er go!
         .send().unwrap();
 
-    let reader = BufReader::new(res);
+    let stream = ChangesStream::new(res);
 
-    for line in reader.lines() {
-        println!("{:?}", line);
-        let deserialized: ChangesLines = serde_json::from_str(line.unwrap().as_ref()).unwrap();
-        println!("{:?}", deserialized);
+    for change in stream.changes() {
+        println!("{:?}", change);
     }
 }

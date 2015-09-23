@@ -1,7 +1,7 @@
-use serde;
-use serde::de::Deserialize;
-use super::change::{Change,ChangeVisitor};
-use super::last_seq::{LastSeq,LastSeqVisitor};
+use serde_json as json;
+use std::convert::AsRef;
+use super::change::{Change};
+use super::last_seq::{LastSeq};
 
 #[derive(Debug)]
 pub enum ChangesLines {
@@ -9,32 +9,23 @@ pub enum ChangesLines {
     LastSeq(LastSeq)
 }
 
-impl Deserialize for ChangesLines {
-    fn deserialize<D>(deserializer: &mut D) -> Result<ChangesLines, D::Error>
-        where D: serde::Deserializer,
-    {
-        static CHANGES_FIELDS: &'static [&'static str] = &["seq", "id", "changes", "doc"];
-        static LAST_SEQ_FIELD: &'static [&'static str] = &["last_seq"];
-
-        deserializer.visit_struct("Changes", CHANGES_FIELDS, ChangeVisitor)
-                    .map(|r| {
-            ChangesLines::Change(r)
-        }).or_else(|_| {
-            deserializer.visit_struct("LastSeq", LAST_SEQ_FIELD, LastSeqVisitor)
-                        .map(|r| {
-                ChangesLines::LastSeq(r)
-            })
+impl ChangesLines {
+    pub fn parse<'a, Line: AsRef<str>>(line: Line) -> Result<ChangesLines, json::error::Error>{
+        json::from_str::<Change>(line.as_ref())
+             .map(|c| {
+            ChangesLines::Change(c)
+        }).or_else(|e| {
+            json::from_str::<LastSeq>(line.as_ref())
+                 .map(|seq| {
+                ChangesLines::LastSeq(seq)
+            }).or(Err(e))
         })
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use serde_json as json;
-    use super::ChangesLines;
-
-    #[test]
-    fn parses_last_seq_line() {
-        json::from_str::<ChangesLines>("{\"last_seq\":3}").unwrap();
+    pub fn change(&self) -> bool {
+        match *self {
+            ChangesLines::Change(_) => true,
+            _ => false
+        }
     }
 }

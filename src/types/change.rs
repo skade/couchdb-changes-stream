@@ -5,7 +5,7 @@ use super::revision::Revision;
 
 #[derive(Debug)]
 pub struct Change {
-    seq: i64,
+    pub seq: i64,
     id: String,
     changes: Vec<Revision>,
     doc: Option<json::Value>,
@@ -48,7 +48,7 @@ impl serde::Deserialize for ChangeField {
             }
         }
 
-        deserializer.visit(ChangeFieldVisitor)
+        deserializer.visit_map(ChangeFieldVisitor)
     }
 }
 
