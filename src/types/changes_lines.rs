@@ -28,4 +28,18 @@ impl ChangesLines {
             _ => false
         }
     }
+
+    pub fn to_change(self) -> Option<Change> {
+        match self {
+            ChangesLines::Change(c) => Some(c),
+            _ => None
+        }
+    }
+
+    pub fn to_last_seq(self) -> Option<LastSeq> {
+        match self {
+            ChangesLines::LastSeq(l) => Some(l),
+            _ => None
+        }
+    }
 }

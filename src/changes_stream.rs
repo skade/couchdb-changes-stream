@@ -51,10 +51,7 @@ impl<T: Read> Iterator for Changes<T> {
     #[inline]
     fn next(&mut self) -> Option<Change> {
         if let Some(next) = self.stream.next() {
-            match next {
-                ChangesLines::Change(c) => Some(c),
-                _ => None
-            }
+            next.to_change()
         } else {
             None
         }

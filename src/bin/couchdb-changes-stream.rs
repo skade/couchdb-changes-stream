@@ -13,7 +13,7 @@ fn main() {
     let mut client = Client::new();
 
     // Creating an outgoing request.
-    let res = client.get("http://localhost:5984/test_db/_changes?feed=continuous&include_docs=true")
+    let res = client.get("http://localhost:5984/test_db/_changes?feed=continuous&include_docs=true&since=3")
         // set a header
         .header(Connection::close())
         // let 'er go!
