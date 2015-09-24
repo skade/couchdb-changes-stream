@@ -1,21 +1,21 @@
 use serde;
 use serde::de::Deserialize;
-use serde_json as json;
+use std::marker::PhantomData;
 use super::revision::Revision;
 
 #[derive(Debug)]
-pub struct Change {
+pub struct Change<T: Deserialize> {
     pub seq: i64,
     id: String,
     changes: Vec<Revision>,
-    doc: Option<json::Value>,
+    doc: Option<T>,
 }
 
-impl Deserialize for Change {
-    fn deserialize<D>(deserializer: &mut D) -> Result<Change, D::Error>
+impl<T: Deserialize> Deserialize for Change<T> {
+    fn deserialize<D>(deserializer: &mut D) -> Result<Change<T>, D::Error>
         where D: serde::Deserializer,
     {
-        deserializer.visit(ChangeVisitor)
+        deserializer.visit(ChangeVisitor { phantom: PhantomData } )
     }
 }
 
@@ -52,12 +52,14 @@ impl serde::Deserialize for ChangeField {
     }
 }
 
-pub struct ChangeVisitor;
+pub struct ChangeVisitor<T: Deserialize> {
+    phantom: PhantomData<T>
+}
 
-impl serde::de::Visitor for ChangeVisitor {
-    type Value = Change;
+impl<T: Deserialize> serde::de::Visitor for ChangeVisitor<T> {
+    type Value = Change<T>;
 
-    fn visit_map<V>(&mut self, mut visitor: V) -> Result<Change, V::Error>
+    fn visit_map<V>(&mut self, mut visitor: V) -> Result<Change<T>, V::Error>
         where V: serde::de::MapVisitor
     {
         let mut seq = None;

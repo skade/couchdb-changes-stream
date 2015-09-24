@@ -1,38 +1,41 @@
 use std::io::{BufRead,BufReader,Read,Lines};
+use std::marker::PhantomData;
+use serde::de::Deserialize;
 use types::change::{Change};
 use types::changes_lines::{ChangesLines};
 
-pub struct ChangesStream<T: Read> {
-    source: Lines<BufReader<T>>
+pub struct ChangesStream<T: Read, D: Deserialize> {
+    source: Lines<BufReader<T>>,
+    documents: PhantomData<D>
 }
 
-pub struct Full<T: Read> {
-    stream: ChangesStream<T>
+pub struct Full<T: Read, D: Deserialize> {
+    stream: ChangesStream<T, D>
 }
 
-pub struct Changes<T: Read> {
-    stream: Full<T>
+pub struct Changes<T: Read, D: Deserialize> {
+    stream: Full<T, D>
 }
 
-impl<T: Read> ChangesStream<T> {
-    pub fn new(source: T) -> ChangesStream<T> {
-        ChangesStream { source: BufReader::new(source).lines() }
+impl<T: Read, D: Deserialize> ChangesStream<T,D> {
+    pub fn new(source: T) -> ChangesStream<T,D> {
+        ChangesStream { source: BufReader::new(source).lines(), documents: PhantomData }
     }
 
-    pub fn full(self) -> Full<T> {
+    pub fn full(self) -> Full<T, D> {
         Full { stream: self }
     }
 
-    pub fn changes(self) -> Changes<T> {
+    pub fn changes(self) -> Changes<T, D> {
         Changes { stream: self.full() }
     }
 }
 
-impl<T: Read> Iterator for Full<T> {
-    type Item = ChangesLines;
+impl<T: Read, D: Deserialize> Iterator for Full<T, D> {
+    type Item = ChangesLines<D>;
 
     #[inline]
-    fn next(&mut self) -> Option<ChangesLines> {
+    fn next(&mut self) -> Option<ChangesLines<D>> {
         if let Some(elem) = self.stream.source.next() {
             elem.ok().iter()
                 .filter_map(|line| {
@@ -45,11 +48,11 @@ impl<T: Read> Iterator for Full<T> {
     }
 }
 
-impl<T: Read> Iterator for Changes<T> {
-    type Item = Change;
+impl<T: Read, D: Deserialize> Iterator for Changes<T, D> {
+    type Item = Change<D>;
 
     #[inline]
-    fn next(&mut self) -> Option<Change> {
+    fn next(&mut self) -> Option<Change<D>> {
         if let Some(next) = self.stream.next() {
             next.to_change()
         } else {

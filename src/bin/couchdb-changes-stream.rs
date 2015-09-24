@@ -1,6 +1,6 @@
 extern crate hyper;
 extern crate serde;
-extern crate serde_json;
+extern crate serde_json as json;
 extern crate couchdb_changes_stream;
 
 use couchdb_changes_stream::changes_stream::ChangesStream;
@@ -19,7 +19,7 @@ fn main() {
         // let 'er go!
         .send().unwrap();
 
-    let stream = ChangesStream::new(res);
+    let stream: ChangesStream<_,json::Value> = ChangesStream::new(res);
 
     for change in stream.changes() {
         println!("{:?}", change);
