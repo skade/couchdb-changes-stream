@@ -10,7 +10,7 @@ impl Deserialize for LastSeq {
     fn deserialize<D>(deserializer: &mut D) -> Result<LastSeq, D::Error>
         where D: serde::Deserializer,
     {
-        deserializer.visit(LastSeqVisitor)
+        deserializer.deserialize(LastSeqVisitor)
     }
 }
 
@@ -32,12 +32,12 @@ impl serde::Deserialize for LastSeqField {
             {
                 match value {
                     "last_seq" => Ok(LastSeqField::LastSeq),
-                    _ => Err(serde::de::Error::syntax("expected last_seq field"))
+                    _ => Err(serde::de::Error::unknown_field(format!("expected last_seq field, got: {}", value).as_ref()))
                 }
             }
         }
 
-        deserializer.visit(LastSeqFieldVisitor)
+        deserializer.deserialize(LastSeqFieldVisitor)
     }
 }
 

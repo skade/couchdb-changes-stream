@@ -10,3 +10,4 @@ serde_json = "*"
 
 [[bin]]
 name = "couchdb-changes-stream"
+doc = false

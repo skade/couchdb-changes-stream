@@ -15,7 +15,7 @@ impl<T: Deserialize> Deserialize for Change<T> {
     fn deserialize<D>(deserializer: &mut D) -> Result<Change<T>, D::Error>
         where D: serde::Deserializer,
     {
-        deserializer.visit(ChangeVisitor { phantom: PhantomData } )
+        deserializer.deserialize(ChangeVisitor { phantom: PhantomData } )
     }
 }
 
@@ -43,12 +43,12 @@ impl serde::Deserialize for ChangeField {
                     "id" => Ok(ChangeField::Id),
                     "changes" => Ok(ChangeField::Changes),
                     "doc" => Ok(ChangeField::Doc),
-                    _ => Err(serde::de::Error::syntax("expected seq, id or changes field")),
+                    _ => Err(serde::de::Error::unknown_field(format!("expected seq, id or changes field, got: {}", value).as_ref())),
                 }
             }
         }
 
-        deserializer.visit_map(ChangeFieldVisitor)
+        deserializer.deserialize(ChangeFieldVisitor)
     }
 }
 

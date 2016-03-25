@@ -1,5 +1,6 @@
 use serde;
 use serde::de::Deserialize;
+use serde::de::Deserializer;
 
 #[derive(Debug)]
 pub struct Revision {
@@ -8,9 +9,9 @@ pub struct Revision {
 
 impl Deserialize for Revision {
     fn deserialize<D>(deserializer: &mut D) -> Result<Revision, D::Error>
-        where D: serde::Deserializer,
+        where D: serde::de::Deserializer,
     {
-        deserializer.visit(RevisionVisitor)
+        deserializer.deserialize(RevisionVisitor)
     }
 }
 
@@ -32,12 +33,12 @@ impl serde::Deserialize for RevisionField {
             {
                 match value {
                     "rev" => Ok(RevisionField::Rev),
-                    _ => Err(serde::de::Error::syntax("expected rev field"))
+                    _ => Err(serde::de::Error::missing_field("expected rev field"))
                 }
             }
         }
 
-        deserializer.visit(RevisionFieldVisitor)
+        deserializer.deserialize(RevisionFieldVisitor)
     }
 }
 

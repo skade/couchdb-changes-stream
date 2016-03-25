@@ -10,7 +10,7 @@ use hyper::header::Connection;
 
 fn main() {
     // Create a client.
-    let mut client = Client::new();
+    let client = Client::new();
 
     // Creating an outgoing request.
     let res = client.get("http://localhost:5984/test_db/_changes?feed=continuous&include_docs=true&since=3")
